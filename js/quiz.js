@@ -12,6 +12,22 @@
   let timeLeft = TIMER_SECONDS;
   let answering = false;
   let attemptId = null;
+  function shuffleOrder(n) {
+    const order = Array.from({ length: n }, (_, i) => i);
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    return order;
+  }
+
+  function ensureShuffled(q) {
+    if (!q._order || q._attemptId !== attemptId) {
+      q._order = shuffleOrder(q.choices.length);
+      q._attemptId = attemptId;
+    }
+    return q._order;
+  }
 
   const hudQuestion = document.getElementById('hud-question');
   const hudScore = document.getElementById('hud-score');
@@ -48,23 +64,24 @@
     questionText.textContent = q.question;
     UI.clearEl(choicesEl);
     feedbackEl.textContent = '';
-    q.choices.forEach((choice, idx) => {
+    const order = ensureShuffled(q);
+    order.forEach((origIdx, pos) => {
       const li = document.createElement('li');
       const btn = document.createElement('button');
       btn.className = 'choice-btn';
-      btn.textContent = choice;
-      btn.setAttribute('data-index', String(idx));
-      btn.addEventListener('click', () => handleAnswer(idx));
+      btn.textContent = q.choices[origIdx];
+      btn.setAttribute('data-pos', String(pos));
+      btn.setAttribute('data-orig-idx', String(origIdx));
+      btn.addEventListener('click', () => handleAnswer(origIdx, btn));
       li.appendChild(btn);
       choicesEl.appendChild(li);
     });
-    // Keyboard shortcuts 1-4
     document.onkeydown = (e) => {
       if (!answering) return;
       const keyNum = parseInt(e.key, 10);
       if (keyNum >= 1 && keyNum <= 4) {
-        const idx = keyNum - 1;
-        const btn = choicesEl.querySelector(`.choice-btn[data-index="${idx}"]`);
+        const pos = keyNum - 1;
+        const btn = choicesEl.querySelector(`.choice-btn[data-pos="${pos}"]`);
         if (btn) btn.click();
       }
     };
@@ -97,21 +114,22 @@
     return Math.round(base * (timeLeftSec / TIMER_SECONDS));
   }
 
-  function handleAnswer(idx) {
+  function handleAnswer(origIdx, clickedBtn) {
     if (!answering) return;
     answering = false;
     clearInterval(timerId);
     const q = selected[currentIndex];
-    const correct = idx === q.answerIndex;
+    const correct = origIdx === q.answerIndex;
     const added = scoreFor(q, timeLeft, correct);
     totalScore += added;
     hudScore.textContent = String(totalScore);
 
     // Feedback + mark choices
     const btns = choicesEl.querySelectorAll('.choice-btn');
-    btns.forEach((b, i) => {
-      if (i === q.answerIndex) b.classList.add('correct');
-      if (i === idx && !correct) b.classList.add('incorrect');
+    btns.forEach((b) => {
+      const bOrig = parseInt(b.getAttribute('data-orig-idx') || '-1', 10);
+      if (bOrig === q.answerIndex) b.classList.add('correct');
+      if (b === clickedBtn && !correct) b.classList.add('incorrect');
       b.disabled = true;
     });
     feedbackEl.textContent = correct ? `Correct! +${added}` : 'Incorrect';
@@ -124,8 +142,9 @@
     answering = false;
     const q = selected[currentIndex];
     const btns = choicesEl.querySelectorAll('.choice-btn');
-    btns.forEach((b, i) => {
-      if (i === q.answerIndex) b.classList.add('correct');
+    btns.forEach((b) => {
+      const bOrig = parseInt(b.getAttribute('data-orig-idx') || '-1', 10);
+      if (bOrig === q.answerIndex) b.classList.add('correct');
       b.disabled = true;
     });
     feedbackEl.textContent = 'Time up! +0';
