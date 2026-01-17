@@ -154,6 +154,16 @@
     hudScore.textContent = '0';
     hudQuestion.textContent = '1/5';
 
+    // Re-enable Save button for a new attempt
+    const saveBtn = document.getElementById('btn-save');
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Score';
+      saveBtn.removeAttribute('aria-disabled');
+    }
+    const saveStatus = document.getElementById('save-status');
+    if (saveStatus) saveStatus.textContent = '';
+
     // New attempt identifier for idempotent save
     try {
       attemptId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
