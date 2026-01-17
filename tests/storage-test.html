@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Storage Tests</title>
+  <style>
+    body { font-family: system-ui, Segoe UI, Arial; margin: 24px; }
+    h1 { font-size: 20px; margin-bottom: 12px; }
+    .pass { color: #0a7f2e; }
+    .fail { color: #b00020; }
+    ul { padding-left: 20px; }
+    code { background: #f5f7fa; padding: 2px 4px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>LocalStorage Leaderboard Tests</h1>
+  <p>Verifying <code>LeaderboardAPI</code> using <code>js/storage.js</code>.</p>
+  <ul id="results"></ul>
+
+  <script src="../js/storage.js"></script>
+  <script>
+    (function() {
+      const resultsEl = document.getElementById('results');
+      const KEY = 'vct-quiz-scores';
+      const SEQ_KEY = 'vct-quiz-scores-seq';
+
+      function log(ok, msg) {
+        const li = document.createElement('li');
+        li.className = ok ? 'pass' : 'fail';
+        li.textContent = (ok ? 'PASS: ' : 'FAIL: ') + msg;
+        resultsEl.appendChild(li);
+
+        const q = encodeURIComponent((ok ? 'PASS: ' : 'FAIL: ') + msg);
+        if (navigator.sendBeacon) {
+          try { navigator.sendBeacon('/__testlog?m=' + q); } catch {}
+        } else {
+          fetch('/__testlog?m=' + q).catch(() => {});
+        }
+      }
+
+      function clearStorage() {
+        try { localStorage.removeItem(KEY); } catch {}
+        try { localStorage.removeItem(SEQ_KEY); } catch {}
+      }
+
+      function expect(cond, msg) { log(!!cond, msg); }
+
+      async function run() {
+        clearStorage();
+
+        // 1) Fetch on empty
+        let rows = await window.LeaderboardAPI.fetchTopScores();
+        expect(Array.isArray(rows) && rows.length === 0, 'Empty fetch returns []');
+
+        // 2) Save Alice 100
+        await window.LeaderboardAPI.saveScore('Alice', 100);
+        rows = await window.LeaderboardAPI.fetchTopScores();
+        expect(rows.length === 1, 'After one save, length is 1');
+        expect(rows[0].username === 'Alice' && rows[0].score === 100, 'Alice score saved and returned');
+
+        // 3) Save Bob 150 -> Bob first
+        await window.LeaderboardAPI.saveScore('Bob', 150);
+        rows = await window.LeaderboardAPI.fetchTopScores();
+        expect(rows.length === 2, 'After two saves, length is 2');
+        expect(rows[0].username === 'Bob' && rows[0].score === 150, 'Higher score ranks first');
+
+        // 4) Save Charlie 150 -> most recent first on tie
+        await window.LeaderboardAPI.saveScore('Charlie', 150);
+        rows = await window.LeaderboardAPI.fetchTopScores();
+        expect(rows[0].username === 'Charlie', 'Tie-breaker: most recent first');
+        expect(rows[1].username === 'Bob', 'Older 150 follows newer 150');
+
+        // 5) Validation errors
+        let threw = false;
+        try { await window.LeaderboardAPI.saveScore('', 10); } catch { threw = true; }
+        expect(threw, 'Empty username throws');
+
+        threw = false;
+        try { await window.LeaderboardAPI.saveScore('Dave', -5); } catch { threw = true; }
+        expect(threw, 'Negative score throws');
+
+        // 6) Limit behavior (basic)
+        for (let i = 0; i < 60; i++) {
+          await window.LeaderboardAPI.saveScore('User' + i, i);
+        }
+        rows = await window.LeaderboardAPI.fetchTopScores();
+        expect(rows.length === 50, 'Fetch respects default limit of 50');
+
+        log(true, 'All tests executed');
+      }
+
+      run().catch(e => {
+        console.error(e);
+        log(false, 'Unexpected error: ' + (e && e.message ? e.message : e));
+      });
+    })();
+  </script>
+</body>
+</html>

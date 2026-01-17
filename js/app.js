@@ -23,10 +23,10 @@
     try {
       const rows = await LeaderboardAPI.fetchTopScores();
       if (!rows || rows.length === 0) {
-        lbStatus.textContent = LeaderboardAPI.hasSupabase ? 'No scores yet.' : 'Offline leaderboard (local to device).';
+        lbStatus.textContent = 'No scores yet.';
         return;
       }
-      lbStatus.textContent = LeaderboardAPI.hasSupabase ? 'Live leaderboard' : 'Offline leaderboard (local to device).';
+      lbStatus.textContent = 'Saved scores (local).';
       rows.forEach((row, i) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${i + 1}</td><td>${row.username}</td><td>${row.score}</td><td>${UI.formatDate(row.created_at)}</td>`;
@@ -52,7 +52,7 @@
     }
     try {
       const saved = await LeaderboardAPI.saveScore(name, score);
-      saveStatus.textContent = LeaderboardAPI.hasSupabase ? 'Score saved!' : 'Saved offline to this device.';
+      saveStatus.textContent = 'Score saved to this device.';
     } catch (e) {
       console.error(e);
       saveStatus.textContent = 'Failed to save score.';

@@ -9,15 +9,22 @@
   --danger: #ff5c5c;
 }
 * { box-sizing: border-box; }
-html, body { height: 100%; }
+html, body { height: 100%; width: 100%; }
 body {
   margin: 0; padding: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: radial-gradient(1200px 1200px at 20% 10%, #16202d 0%, var(--bg) 45%), var(--bg);
+  /* Extend gradient to farthest-corner so falloff stays off-screen */
+  background: radial-gradient(farthest-corner at 20% 10%, #16202d 0%, var(--bg) 80%), var(--bg);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--text);
 }
 
+#view-landing { text-align: center; margin: auto 0;}
+/* Center CTA buttons on landing */
+#view-landing .cta-row { justify-content: center; margin-top: 2rem;}
+
 .site-header, .site-footer { text-align: center; padding: 1rem 0; }
-.site-header h1 { margin: 0; font-size: 2rem; }
+.site-header h1 { margin: 0; font-size: 2rem; margin-top: 1rem;}
 .site-footer small { color: var(--muted); }
 
 main { max-width: 960px; margin: 0 auto; padding: 1rem; }
@@ -51,7 +58,6 @@ main { max-width: 960px; margin: 0 auto; padding: 1rem; }
 
 .question { font-size: 1.25rem; margin-bottom: 1rem; }
 .choices { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
-.choices li { }
 .choice-btn {
   width: 100%; text-align: left; background: #122030; color: var(--text); border: 1px solid #223244; border-radius: 8px; padding: 0.75rem; font-weight: 600; cursor: pointer;
 }
@@ -73,6 +79,8 @@ main { max-width: 960px; margin: 0 auto; padding: 1rem; }
 /* Accessibility */
 .visually-hidden { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
 .choice-btn:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+#view-leaderboard { margin-bottom: 20rem; }
 
 /* Responsive */
 @media (max-width: 640px) {

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Storage Tests</title>
+  <style>
+    body { font-family: system-ui, Segoe UI, Arial; padding: 20px; }
+    .pass { color: #0a7a0a; }
+    .fail { color: #b00020; }
+    pre { background: #f6f8fa; padding: 12px; border-radius: 6px; }
+    button { padding: 8px 12px; }
+  </style>
+</head>
+<body>
+  <h1>LocalStorage Leaderboard Tests</h1>
+  <p>Verifies the local-only leaderboard adapter in <code>js/storage.js</code>.</p>
+  <div id="results"></div>
+  <p>
+    <button id="run">Run Tests</button>
+  </p>
+
+  <script src="../js/storage.js"></script>
+  <script>
+    const KEY = 'vct-quiz-scores';
+
+    function write(msg, cls) {
+      const el = document.getElementById('results');
+      const p = document.createElement('p');
+      p.textContent = msg;
+      if (cls) p.className = cls;
+      el.appendChild(p);
+    }
+
+    function clearResults() {
+      const el = document.getElementById('results');
+      el.innerHTML = '';
+    }
+
+    function getRaw() {
+      try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; }
+    }
+
+    async function runTests() {
+      clearResults();
+      // Reset
+      localStorage.removeItem(KEY);
+      write('Cleared localStorage key: ' + KEY);
+
+      // 1) Save two scores with different values and timestamps
+      const a = await window.LeaderboardAPI.saveScore('Alice', 300);
+      await new Promise(r => setTimeout(r, 10));
+      const b = await window.LeaderboardAPI.saveScore('Bob', 500);
+      write('Saved scores: Alice=300, Bob=500');
+
+      // Raw state check
+      const raw = getRaw();
+      if (raw.length === 2) {
+        write('Raw storage contains 2 records', 'pass');
+      } else {
+        write('Expected 2 records, found ' + raw.length, 'fail');
+      }
+
+      // 2) Fetch top scores and validate ordering by score desc
+      const top = await window.LeaderboardAPI.fetchTopScores();
+      if (top.length >= 2 && top[0].username === 'Bob' && top[0].score === 500) {
+        write('Top score is Bob=500 (descending order)', 'pass');
+      } else {
+        write('Top ordering incorrect', 'fail');
+      }
+
+      // 3) Save a tie and ensure recency sorting on tie (most recent first per adapter)
+      await window.LeaderboardAPI.saveScore('Cara', 500);
+      const top2 = await window.LeaderboardAPI.fetchTopScores();
+      const idxBob = top2.findIndex(r => r.username === 'Bob' && r.score === 500);
+      const idxCara = top2.findIndex(r => r.username === 'Cara' && r.score === 500);
+      if (idxCara !== -1 && idxBob !== -1 && idxCara < idxBob) {
+        write('Tie handling: newer 500 (Cara) ranks ahead of older 500 (Bob)', 'pass');
+      } else {
+        write('Tie handling failed', 'fail');
+      }
+
+      // 4) Negative score rejection
+      let negFailed = false;
+      try { await window.LeaderboardAPI.saveScore('Eve', -1); } catch { negFailed = true; }
+      write(negFailed ? 'Negative scores rejected' : 'Negative score was accepted', negFailed ? 'pass' : 'fail');
+
+      // 5) Empty username rejection
+      let emptyFailed = false;
+      try { await window.LeaderboardAPI.saveScore('   ', 10); } catch { emptyFailed = true; }
+      write(emptyFailed ? 'Empty usernames rejected' : 'Empty username was accepted', emptyFailed ? 'pass' : 'fail');
+
+      write('Done. Inspect localStorage and table above for results.');
+    }
+
+    document.getElementById('run').addEventListener('click', runTests);
+    // auto-run on load
+    runTests();
+  </script>
+</body>
+</html>

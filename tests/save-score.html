@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Save Score (Test)</title>
+  <style> body { font-family: system-ui, Segoe UI, Arial; margin: 24px; } </style>
+</head>
+<body>
+  <h1>Saving a test score to localStorage…</h1>
+  <p id="status">Working…</p>
+  <p><a href="../index.html#leaderboard">Open Leaderboard</a></p>
+
+  <script src="../js/storage.js"></script>
+  <script>
+    (async function() {
+      try {
+        const name = 'AutoTester';
+        const score = Math.floor(100 + Math.random() * 900);
+        await window.LeaderboardAPI.saveScore(name, score);
+        document.getElementById('status').textContent = `Saved { username: ${name}, score: ${score} }`;
+      } catch (e) {
+        console.error(e);
+        document.getElementById('status').textContent = 'Failed to save test score: ' + (e && e.message ? e.message : e);
+      }
+    })();
+  </script>
+</body>
+</html>
