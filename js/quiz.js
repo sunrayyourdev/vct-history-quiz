@@ -11,6 +11,7 @@
   let timerId = null;
   let timeLeft = TIMER_SECONDS;
   let answering = false;
+  let attemptId = null;
 
   const hudQuestion = document.getElementById('hud-question');
   const hudScore = document.getElementById('hud-score');
@@ -153,6 +154,13 @@
     hudScore.textContent = '0';
     hudQuestion.textContent = '1/5';
 
+    // New attempt identifier for idempotent save
+    try {
+      attemptId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
+    } catch {
+      attemptId = String(Date.now());
+    }
+
     try {
       const res = await fetch('data/questions.json');
       questions = await res.json();
@@ -167,5 +175,7 @@
     startTimer();
   }
 
-  window.Quiz = { startQuiz };
+  function getAttemptId() { return attemptId; }
+
+  window.Quiz = { startQuiz, getAttemptId };
 })();

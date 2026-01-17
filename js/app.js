@@ -51,11 +51,19 @@
       return;
     }
     try {
-      const saved = await LeaderboardAPI.saveScore(name, score);
+      // Prevent duplicate submissions
+      if (btnSave.disabled) return;
+      btnSave.disabled = true;
+      const saved = await LeaderboardAPI.saveScore(name, score, Quiz.getAttemptId && Quiz.getAttemptId());
       saveStatus.textContent = 'Score saved to this device.';
+      btnSave.textContent = 'Saved';
+      btnSave.setAttribute('aria-disabled', 'true');
     } catch (e) {
       console.error(e);
       saveStatus.textContent = 'Failed to save score.';
+      // Allow retry on error
+      btnSave.disabled = false;
+      btnSave.textContent = 'Save Score';
     }
   }
 

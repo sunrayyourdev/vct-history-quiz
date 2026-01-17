@@ -46,14 +46,20 @@
     return (b.score || 0) - (a.score || 0) || (b.seq || 0) - (a.seq || 0);
   }
 
-  async function saveScore(username, score) {
+  async function saveScore(username, score, attemptId) {
     const uname = String(username || '').trim().slice(0, 16);
     const s = Number(score);
     if (!uname) throw new Error('Username required');
     if (!Number.isFinite(s) || s < 0) throw new Error('Invalid score');
 
     const arr = loadScores();
-    const payload = { username: uname, score: s, created_at: new Date().toISOString(), seq: nextSeq() };
+    // Idempotent save per attempt: if attemptId provided and exists, return existing
+    if (attemptId) {
+      const existing = arr.find(r => r.attemptId === attemptId);
+      if (existing) return existing;
+    }
+
+    const payload = { username: uname, score: s, created_at: new Date().toISOString(), seq: nextSeq(), attemptId: attemptId || null };
     arr.push(payload);
     arr.sort(sortScores);
     persistScores(arr);
