@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VCT History Quiz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>VCT History Quiz</h1>
+  </header>
+
+  <main>
+    <!-- Landing View -->
+    <section id="view-landing" class="view active" aria-labelledby="landing-title">
+      <h2 id="landing-title" class="visually-hidden">Landing</h2>
+      <p class="lead">Test your knowledge of Valorant Champions Tour history. Answer quickly for a higher score!</p>
+      <div class="cta-row">
+        <button id="btn-start" class="btn primary">Start Game</button>
+        <button id="btn-leaderboard" class="btn ghost">View Leaderboard</button>
+      </div>
+    </section>
+
+    <!-- Quiz View -->
+    <section id="view-quiz" class="view" aria-labelledby="quiz-title" aria-live="polite">
+      <h2 id="quiz-title" class="visually-hidden">Quiz</h2>
+      <div class="hud">
+        <div class="hud-item">
+          <span class="label">Question</span>
+          <span id="hud-question" class="value">1/5</span>
+        </div>
+        <div class="hud-item">
+          <span class="label">Score</span>
+          <span id="hud-score" class="value">0</span>
+        </div>
+        <div class="hud-item timer" aria-live="assertive">
+          <span class="label">Time</span>
+          <span id="hud-timer" class="value">10.0s</span>
+          <div class="timer-bar"><div id="timer-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div id="question-text" class="question">Loading question…</div>
+        <ol id="choices" class="choices" role="list">
+          <!-- Choices populated by JS -->
+        </ol>
+        <div id="feedback" class="feedback" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- Results View -->
+    <section id="view-results" class="view" aria-labelledby="results-title">
+      <h2 id="results-title" class="visually-hidden">Results</h2>
+      <div class="card">
+        <h3>Quiz Complete!</h3>
+        <p class="lead">Your total score:</p>
+        <p id="final-score" class="final-score">0</p>
+        <div class="save-row">
+          <input id="username" type="text" maxlength="16" placeholder="Enter username" aria-label="Username" />
+          <button id="btn-save" class="btn primary">Save Score</button>
+        </div>
+        <div id="save-status" class="save-status" aria-live="polite"></div>
+        <div class="cta-row">
+          <button id="btn-play-again" class="btn">Play Again</button>
+          <button id="btn-view-leaderboard" class="btn ghost">View Leaderboard</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Leaderboard View -->
+    <section id="view-leaderboard" class="view" aria-labelledby="leaderboard-title">
+      <h2 id="leaderboard-title" class="visually-hidden">Leaderboard</h2>
+      <div class="card">
+        <h3>Top Scores</h3>
+        <p id="lb-status" class="save-status" aria-live="polite"></p>
+        <table class="leaderboard">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Username</th>
+              <th>Score</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="lb-body">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+        <div class="cta-row">
+          <button id="btn-leaderboard-back" class="btn">Back</button>
+          <button id="btn-refresh-lb" class="btn ghost">Refresh</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <small>Cloud9 × JetBrains — Event Booth Mini-Game</small>
+  </footer>
+
+  <!-- Supabase CDN (global `supabase`) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- App Scripts -->
+  <script src="js/config.js" defer></script>
+  <script src="js/ui.js" defer></script>
+  <script src="js/validators.js" defer></script>
+  <script src="js/supabase.js" defer></script>
+  <script src="js/quiz.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>
