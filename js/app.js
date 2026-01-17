@@ -5,7 +5,6 @@
   const btnPlayAgain = document.getElementById('btn-play-again');
   const btnViewLeaderboard = document.getElementById('btn-view-leaderboard');
   const btnLeaderboardBack = document.getElementById('btn-leaderboard-back');
-  const btnRefreshLb = document.getElementById('btn-refresh-lb');
   const btnSave = document.getElementById('btn-save');
   const usernameInput = document.getElementById('username');
   const lbBody = document.getElementById('lb-body');
@@ -73,7 +72,6 @@
   btnPlayAgain.addEventListener('click', goQuiz);
   btnViewLeaderboard.addEventListener('click', goLeaderboard);
   btnLeaderboardBack.addEventListener('click', goLanding);
-  btnRefreshLb.addEventListener('click', refreshLeaderboard);
   btnSave.addEventListener('click', saveScore);
 
   // Initial view
