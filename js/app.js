@@ -8,7 +8,6 @@
   const btnSave = document.getElementById('btn-save');
   const usernameInput = document.getElementById('username');
   const lbBody = document.getElementById('lb-body');
-  const lbStatus = document.getElementById('lb-status');
   const saveStatus = document.getElementById('save-status');
   const viewLeaderboardEl = document.getElementById('view-leaderboard');
   const EVENT_CHANNEL = 'vct-quiz-events';
@@ -24,23 +23,25 @@
   }
 
   async function refreshLeaderboard() {
-    lbStatus.textContent = 'Loading…';
     lbBody.innerHTML = '';
     try {
       const rows = await LeaderboardAPI.fetchTopScores();
       if (!rows || rows.length === 0) {
-        lbStatus.textContent = 'No scores yet.';
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td colspan="4">No scores yet.</td>';
+        lbBody.appendChild(tr);
         return;
       }
-      lbStatus.textContent = 'Saved scores (local).';
       rows.forEach((row, i) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${i + 1}</td><td>${row.username}</td><td>${row.score}</td><td>${UI.formatDate(row.created_at)}</td>`;
         lbBody.appendChild(tr);
       });
     } catch (e) {
-      lbStatus.textContent = 'Failed to load leaderboard';
       console.error(e);
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td colspan="4">Failed to load.</td>';
+      lbBody.appendChild(tr);
     }
   }
 
