@@ -3,6 +3,11 @@
   const STORAGE_KEY = 'vct-quiz-scores';
   const SEQ_KEY = 'vct-quiz-scores-seq';
   const LIMIT = 50; // default top N
+  const EVENT_CHANNEL = 'vct-quiz-events';
+  const PING_KEY = 'vct-quiz-ping';
+
+  // Cross-tab channel (if supported)
+  const bc = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(EVENT_CHANNEL) : null;
 
   function storageAvailable() {
     try {
@@ -30,6 +35,17 @@
   function persistScores(arr) {
     if (!storageAvailable()) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  }
+
+  function signalUpdate() {
+    // Notify other tabs that scores changed
+    try {
+      if (bc) bc.postMessage({ type: 'scores-updated', at: Date.now() });
+    } catch {}
+    try {
+      // Fallback: trigger storage event in other tabs
+      localStorage.setItem(PING_KEY, `${Date.now()}:${Math.random()}`);
+    } catch {}
   }
 
   function nextSeq() {
@@ -63,6 +79,7 @@
     arr.push(payload);
     arr.sort(sortScores);
     persistScores(arr);
+    signalUpdate();
     return payload;
   }
 
@@ -73,6 +90,7 @@
   
   async function clearAllScores() {
     persistScores([]);
+    signalUpdate();
     return [];
   }
 

@@ -10,11 +10,18 @@
   const lbBody = document.getElementById('lb-body');
   const lbStatus = document.getElementById('lb-status');
   const saveStatus = document.getElementById('save-status');
+  const viewLeaderboardEl = document.getElementById('view-leaderboard');
+  const EVENT_CHANNEL = 'vct-quiz-events';
+  const PING_KEY = 'vct-quiz-ping';
 
   function goLanding() { UI.show('landing'); }
   function goQuiz() { Quiz.startQuiz(); }
   function goResults() { UI.show('results'); }
   function goLeaderboard() { UI.show('leaderboard'); refreshLeaderboard(); }
+
+  function isLeaderboardActive() {
+    return viewLeaderboardEl && viewLeaderboardEl.classList.contains('active');
+  }
 
   async function refreshLeaderboard() {
     lbStatus.textContent = 'Loading…';
@@ -73,6 +80,25 @@
   btnViewLeaderboard.addEventListener('click', goLeaderboard);
   btnLeaderboardBack.addEventListener('click', goLanding);
   btnSave.addEventListener('click', saveScore);
+
+  // Cross-tab listeners: refresh leaderboard when it is visible
+  try {
+    if (typeof BroadcastChannel !== 'undefined') {
+      const bc = new BroadcastChannel(EVENT_CHANNEL);
+      bc.addEventListener('message', (e) => {
+        if (e && e.data && e.data.type === 'scores-updated' && isLeaderboardActive()) {
+          refreshLeaderboard();
+        }
+      });
+    }
+  } catch {}
+
+  window.addEventListener('storage', (e) => {
+    // Refresh when scores or ping key changes in other tabs
+    if ((e.key === 'vct-quiz-scores' || e.key === PING_KEY) && isLeaderboardActive()) {
+      refreshLeaderboard();
+    }
+  });
 
   // Initial view
   goLanding();
