@@ -98,7 +98,11 @@
   </main>
 
   <footer class="site-footer">
-    <small>Cloud9 × JetBrains — Event Booth Mini-Game</small>
+    <small>
+      © <span id="footer-year"></span> VCT History Quiz · Built by
+      <a href="https://github.com/sunrayyourdev" target="_blank" rel="noopener">@sunrayyourdev</a>
+    </small>
+    <span class="badge event-badge" aria-label="Event">Cloud9 × JetBrains</span>
   </footer>
 
   <!-- App Scripts -->
@@ -107,5 +111,11 @@
   <script src="js/storage.js" defer></script>
   <script src="js/quiz.js" defer></script>
   <script src="js/app.js" defer></script>
+  <script>
+    (function(){
+      var y = document.getElementById('footer-year');
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
 </body>
 </html>
